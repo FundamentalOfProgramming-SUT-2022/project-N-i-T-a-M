@@ -5,76 +5,43 @@
 #include <dirent.h>
 #include <errno.h>
 
-#define s 1000
-#define t 1000
 
-void createfile (char *dash_file,char *address){
-    char a[6]="--file";
-    for(int i=0;i<6;i++){
-        if(*(dash_file+i)!=a[i]){
-            printf("incorrect input");
-            return ;
-        }
+void createfile (char *address){
+    int size = 0;
+    while(*(address+size)!='\0'){
+        size++;
     }
-    char b[5]="root/";
-    for(int i=0;i<5;i++){
-        if(*(address+i)!=b[i]){
-            printf("incorrect input");
-            return ;
-        }
+    if(*(address)=='\"'){
+        
     }
-    int cnt=0;
-    while(*(address+cnt)!='\0'){
-        cnt++;
-    }
-    for(int i=6;i<cnt;i++){
-        if(*(address+i)=='/'){
-            int start;
-            for(int j=0;j<i;j++){
-                if(*(address+j)=='/'){
-                    start=j;
-                }
-            }
-            char *name = (char*)malloc((i-start)*sizeof(char));
-            for(int j=0;j<i-start-1;j++){
-                *(name+j)=*(address+start+j+1);
-            }
-            DIR *dir =opendir(name);
-            if(dir){
-                closedir(dir);
-            }
-            else if(ENOENT == errno){
-                char *add=(char*)malloc(i*sizeof(char));
+    else {
+        for(int i=1;i<size;i++){
+            if(*(address+i)=='\\'){
+                
+                char *directory = (char*)malloc(i*sizeof(char));
                 for(int j=0;j<i;j++){
-                    *(add+j)=*(address+j);
+                    *(directory+j)=*(address+j);
                 }
-                int result = mkdir(add);
-            }
-        }
-        else if(i==cnt){
-            if(*(address+i)=='/'){
-                printf("incorrect input");
-                return ;
-            }
-
-            int start;
-            for(int j=0;j<i;j++){
-                if(*(address+j)=='/'){
-                    start=j;
+                
+                DIR*dir;
+                dir=opendir(directory);
+                if(dir){
+                    closedir(dir);
                 }
+                else if(ENOENT==errno){
+                    int result = mkdir(directory);
+                }
+                
             }
-            char *name = (char*)malloc((cnt-start)*sizeof(char));
-            for(int j=0;j<cnt-start;j++){
-                *(name+j)=*(address+start+j+1);
+            
             }
-            FILE *file = fopen(name,"r");
-            if(file){
-                printf("file already exists");
+            FILE*file;
+            if((file=fopen(address,"r"))!=NULL){
                 fclose(file);
+                printf("File already exists");
             }
             else{
-                fopen(name,"w");
-                fclose(file);
+                file = fopen(address,"w");
             }
 
         }
@@ -82,8 +49,11 @@ void createfile (char *dash_file,char *address){
 
     
 
-}
+
 int main(){
-
-
+char *a={"root\\dir1\\file.txt"};
+for(int i=0;i<19;i++){
+    printf("%c\t",*(a+i));
+}
+createfile(a);
 }
