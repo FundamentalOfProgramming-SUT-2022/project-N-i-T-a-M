@@ -12,17 +12,22 @@ void createfile (char *address){
         size++;
     }
     if(*(address)=='\"'){
-        
+        char*address1 =(char*)malloc(100*sizeof(char));
+        for(int i=0;i<size-2;i++){
+            *(address1+i)=*(address+i+1);
+        }
+        *(address1+size-2)='\0';
+        createfile(address1);
     }
     else {
         for(int i=1;i<size;i++){
-            if(*(address+i)=='\\'){
+            if(*(address+i)=='/'){
                 
-                char *directory = (char*)malloc(i*sizeof(char));
+                char *directory = (char*)malloc(100*sizeof(char));
                 for(int j=0;j<i;j++){
                     *(directory+j)=*(address+j);
                 }
-                
+                *(directory+i)='\0';
                 DIR*dir;
                 dir=opendir(directory);
                 if(dir){
@@ -30,6 +35,7 @@ void createfile (char *address){
                 }
                 else if(ENOENT==errno){
                     int result = mkdir(directory);
+                    closedir(dir);
                 }
                 
             }
@@ -51,9 +57,5 @@ void createfile (char *address){
 
 
 int main(){
-char *a={"root\\dir1\\file.txt"};
-for(int i=0;i<19;i++){
-    printf("%c\t",*(a+i));
-}
-createfile(a);
+
 }
