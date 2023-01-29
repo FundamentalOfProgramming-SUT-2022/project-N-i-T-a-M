@@ -4,9 +4,14 @@
 #include<sys/stat.h>
 #include <dirent.h>
 #include <errno.h>
-
 #define S 10000
-char*content_to_copy;
+char*content_to_copy;//works as clipboard
+//the prototypes 
+int find(char*,char*);
+void insertstr(char*,char*,int ,int );
+void removestr(char *,int ,int ,int ,char );
+//the side functions
+
 /*
 /struct clipboard{
     char *str ;
@@ -77,11 +82,140 @@ char* quotes(char *address1){
     }
     return address1;
 }
-   
+int wildcard(char*search/*1*/,char*string/*1*/){
+    //search is the file content and string is the content we're looking to find
+    //char*search=quotes(search1);
+    //char*string=quotes(string1);
+    int n=0;
+    while(*(search+n)!='\0'){
+        n++;
+    }    
+    int m=0;
+    while(*(string+m)!='\0'){
+        m++;
+    }
 
-
-
-
+    if(*(string+m-1)!='*' && *(string)!='*'){
+        for(int i=0;i<=n-m;i++){
+            int A=0;
+            for(int j=0;j<m;j++){
+                if(*(search+i+j)==*(string+j)){
+                    A++;
+                }
+                else if(*(search+i+j)!=*(string+j)){
+                    break;
+                }
+            }
+            if(A==m){
+                return i;
+            }
+        }
+        return -1;
+    }
+    else if(*(string+m-1)=='*'){
+        char*find=string;
+        for(int i=0;i<n;i++){
+            int A=0;
+            for(int j=0;j<m-1;j++){
+                if(*(search+i+j)==*(find+j)){
+                    A++;
+                }
+                else {
+                    break;
+                }
+            }
+            if(A==m-1){
+                return i;
+            }
+        }
+        return -1;
+    }
+    else if(*(string)=='*'){
+        char*find=string+1;
+        for(int i=m-2;i<n;i++){
+            int A=0;
+            for(int j=0;j<m-1;j++){
+                if(*(search+i-j)==*(find+m-2-j)){
+                    A++;
+                }
+                else{
+                    break;
+                }
+            }
+            if(A==m-1){
+                int ans;
+                for(int k=i;k>=0;k--){
+                    if(*(search+k)==' '){
+                        return  k+1;
+                    }
+                    else if(k==0){
+                        return 0;
+                    }
+                }
+                
+            }
+        }
+        return -1;
+    }
+}
+char* file_to_string(char*address){
+    quotes(address);
+    char ch;
+    char*string=(char*)malloc(S*sizeof(char));
+    FILE*file=fopen(address,"r");
+    int n=0;
+    while((ch=fgetc(file))!=EOF){
+        *(string+n)=ch;
+        n++;
+    }
+    return string;
+}
+//the attributes
+int count(char*string1,char*address1){//should i print the answer here or not?
+    char*string=quotes(string1);
+    char*address=quotes(address1);
+    if(check_exist(address)){
+    char*field=file_to_string(address);
+    int n=0;
+    while(*(field+n)!='\0'){
+        n++;
+    }
+    if(wildcard(field,string)!=-1){
+    int*arr=(int*)malloc(n*sizeof(int));
+    for(int i=0;i<n;i++){
+        *(arr+i)=wildcard(field+i,string);
+    }
+    int cnt=1;
+    for(int i=1;i<n;i++){
+        if(*(arr+i)>*(arr+i-1)){
+            cnt++;
+        }
+    }
+    return cnt;
+    }
+    else{
+        return 0;
+    }
+} 
+}
+int at(char *string1,char*adderess1,int number){
+    char*address=quotes(adderess1);
+    char*string=quotes(string1);
+    if(check_exist(address)){
+        if(count(string,address)<number){
+            return -1;
+        }
+        else{
+            char*field=file_to_string(address);
+            int n=0;
+            while(*(field+n)!='\0'){
+                n++;
+            }
+            
+        }
+    }
+}
+//the main functions
 void createfile (char *address){//alost completely correct
     int size = 0;
     while(*(address+size)!='\0'){
@@ -128,7 +262,7 @@ void createfile (char *address){//alost completely correct
 
         }
     }
- void insertstr(char *address1, char *string, int line , int index){//almost completely correct except for the ("")part
+void insertstr(char *address1, char *string, int line , int index){//almost completely correct except for the ("")part
     /*be carefull you scan the command(insertstr) then you get --file 
     then you are given the address then --str then the string you need to 
     insert then --pos then the line of insertion then ":" and finally the
@@ -303,13 +437,36 @@ void cutstr(char*address1,int line,int index,int size,char direction){
 }
 void pastestr(char* address1,int line , int index){
     char* address = quotes(address1);
+    if(check_exist(address))
     insertstr(address,content_to_copy,line,index);
+    
 }
+ int find(char*string1,char*address1){//should i print the answer here or not
+    char*address=quotes(address1);
+    char*string=quotes(string1);
+    if(check_exist(address)){
+        char*file_content=(char*)malloc(S*sizeof(char));
+        FILE*file=fopen(address,"r");
+        char ch;
+        int n=0;
+        while((ch=fgetc(file))!=EOF){
+            *(file_content+n)=ch;
+            n++;
+        }
+        
+        *(file_content+n)='\0';
+        fclose(file);
+        int t = wildcard(file_content,string);
+        //printf("%d",t);
+        return t;
+    }
+}
+
 
 int main(){
     //struct clipboard *init=create();//this is needed for the functions working with clipboard
-    //createfile("\"root/dir 1/file 1.txt\"");
-    //insertstr("\"root/dir 1/file 1.txt\"","salam\n",2,4);
+    //createfile("root/file.txt");
+    //insertstr("root/file.txt","hi hohw are you friend?",1,0);
     //createfile("\"root/dir2/file 1.txt\"");
     //cutstr("\"root/dir 1/file 1.txt\"",1,0,4,'f');
     //pastestr("\"root/dir2/file 1.txt\"",1,0);
@@ -318,5 +475,12 @@ int main(){
     // cat("root/file.txt");
     // copy("root/file1.txt",1,3,2,'b',init);
     //cutstr("root/dir 1/file 1.txt",1,3,2,'b',init);
-    
+    //int t = find("a","root/file.txt");
+    //printf("%d",t);
+    //int t= wildcard("hisdi dhfs sfhjo","*f");
+    //printf("%d",t);
+    // int t = count("h","\"root/file.txt\"");
+    // printf("%d\n",t);
+    // int s = at("h","root/file.txt",2);
+    // printf("%d",s);
 }
